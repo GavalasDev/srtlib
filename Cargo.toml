@@ -1,0 +1,14 @@
+[package]
+name = "srtlib"
+version = "0.1.0"
+authors = ["Konstantinos Gavalas <contact@gavalas.dev>"]
+edition = "2018"
+description = "A simple library for handling .srt subtitle files"
+readme = "README.md"
+repository = "https://github.com/galenkod/srtlib"
+license = "MIT OR Apache-2.0"
+keywords = ["subtitle", "subtitles", "srt", "parsing", "parser"]
+categories = ["filesystem", "parser-implementations"]
+
+[dependencies]
+encoding_rs = "0.8.24"
