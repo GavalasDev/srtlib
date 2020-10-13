@@ -9,6 +9,9 @@ repository = "https://github.com/galenkod/srtlib"
 license = "MIT OR Apache-2.0"
 keywords = ["subtitle", "subtitles", "srt", "parsing", "parser"]
 categories = ["filesystem", "parser-implementations"]
+exclude = [
+    ".github"
+]
 
 [dependencies]
 encoding_rs = "0.8.24"
