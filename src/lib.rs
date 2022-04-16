@@ -611,12 +611,16 @@ impl<I: std::slice::SliceIndex<[Subtitle]>> Index<I> for Subtitles {
 
 impl fmt::Display for Subtitles {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut s = String::new();
-        for sub in &self[..self.len() - 1] {
-            s.push_str(&format!("{}\n\n", &sub.to_string()));
+        if self.len() > 0 {
+            let mut s = String::new();
+            for sub in &self[..self.len() - 1] {
+                s.push_str(&format!("{}\n\n", &sub.to_string()));
+            }
+            s.push_str(&self[self.len() - 1].to_string());
+            write!(f, "{}", s)
+        } else {
+            Ok(())
         }
-        s.push_str(&self[self.len() - 1].to_string());
-        write!(f, "{}", s)
     }
 }
 
@@ -754,5 +758,17 @@ mod tests {
                 "This is a subtitle!".to_string()
             )
         );
+    }
+
+    #[test]
+    fn empty_subtitles_display() {
+        let out = Subtitles::new().to_string();
+        assert_eq!(out, String::new());
+    }
+
+    #[test]
+    fn empty_subtitles_parse() {
+        let subs = Subtitles::parse_from_str(String::new()).expect("Failed to parse empty subs");
+        assert_eq!(subs.len(), 0);
     }
 }
