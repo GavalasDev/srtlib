@@ -317,8 +317,9 @@ impl Subtitle {
         }
     }
 
-    /// Construct a new subtitle by parsing a string with the format "num\nstart --> end\ntext"
-    /// where start and end are timestamps using the format hours:minutes:seconds,milliseconds.
+    /// Construct a new subtitle by parsing a string with the format "num\nstart --> end\ntext" or the format
+    /// "num\nstart --> end position_information\ntext" where start and end are timestamps using the format 
+    /// hours:minutes:seconds,milliseconds ; and position_information is position information of any format
     ///
     /// # Errors
     ///
@@ -337,8 +338,10 @@ impl Subtitle {
                 .next()
                 .ok_or(ParsingError::BadSubtitleStructure(num))?,
         )?;
+        let end_with_possible_position_info = time_iter.next().ok_or(ParsingError::BadSubtitleStructure(num))?;
         let end = Timestamp::parse(
-            time_iter
+            end_with_possible_position_info
+                .split(" ")
                 .next()
                 .ok_or(ParsingError::BadSubtitleStructure(num))?,
         )?;
@@ -770,5 +773,18 @@ mod tests {
     fn empty_subtitles_parse() {
         let subs = Subtitles::parse_from_str(String::new()).expect("Failed to parse empty subs");
         assert_eq!(subs.len(), 0);
+    }
+
+    #[test]
+    fn subtitle_with_position_information() {
+        let input = "1\n00:00:07,001 --> 00:00:09,015 position:50,00%,middle align:middle size:80,00% line:84,67%\nThis is a subtitle text";
+        let result = Subtitle::new(
+            1,
+            Timestamp::new(0, 0, 7, 1),
+            Timestamp::new(0, 0, 9, 15),
+            "This is a subtitle text".to_string(),
+        );
+        
+        assert_eq!(Subtitle::parse(input.to_string()).unwrap(), result);
     }
 }
