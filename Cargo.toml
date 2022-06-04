@@ -1,6 +1,6 @@
 [package]
 name = "srtlib"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Konstantinos Gavalas <contact@gavalas.dev>"]
 edition = "2018"
 description = "A simple library for handling .srt subtitle files"
