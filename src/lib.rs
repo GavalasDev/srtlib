@@ -319,7 +319,7 @@ impl Subtitle {
     }
 
     /// Construct a new subtitle by parsing a string with the format "num\nstart --> end\ntext" or the format
-    /// "num\nstart --> end position_information\ntext" where start and end are timestamps using the format 
+    /// "num\nstart --> end position_information\ntext" where start and end are timestamps using the format
     /// hours:minutes:seconds,milliseconds ; and position_information is position information of any format
     ///
     /// # Errors
@@ -339,7 +339,9 @@ impl Subtitle {
                 .next()
                 .ok_or(ParsingError::BadSubtitleStructure(num))?,
         )?;
-        let end_with_possible_position_info = time_iter.next().ok_or(ParsingError::BadSubtitleStructure(num))?;
+        let end_with_possible_position_info = time_iter
+            .next()
+            .ok_or(ParsingError::BadSubtitleStructure(num))?;
         let end = Timestamp::parse(
             end_with_possible_position_info
                 .split(" ")
@@ -459,7 +461,8 @@ impl Subtitles {
 
         for s in input
             .split_terminator("\n\n")
-            .filter(|&x| x.contains(char::is_alphanumeric)) // only parse lines that include alphanumeric characters
+            // only parse lines that include alphanumeric characters
+            .filter(|&x| x.contains(char::is_alphanumeric))
         {
             res.push(Subtitle::parse(s.to_string())?);
         }
@@ -792,7 +795,7 @@ mod tests {
             Timestamp::new(0, 0, 9, 15),
             "This is a subtitle text".to_string(),
         );
-        
+
         assert_eq!(Subtitle::parse(input.to_string()).unwrap(), result);
     }
 }
