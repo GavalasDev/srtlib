@@ -84,6 +84,7 @@ use std::fmt;
 use std::fs;
 use std::io::prelude::*;
 use std::ops::Index;
+use std::path::Path;
 
 /// The error type returned by any function that parses strings or files.
 #[derive(Debug)]
@@ -497,8 +498,11 @@ impl Subtitles {
     /// If something unexpected is encountered during the parsing of the contents of the file, a
     /// corresponding error variant will be returned.
     ///
-    /// [Encoding Standard]: https://encoding.spec.whatwg.org/#names-and-labels 
-    pub fn parse_from_file(path: &str, encoding: Option<&str>) -> Result<Subtitles, ParsingError> {
+    /// [Encoding Standard]: https://encoding.spec.whatwg.org/#names-and-labels
+    pub fn parse_from_file(
+        path: impl AsRef<Path>,
+        encoding: Option<&str>,
+    ) -> Result<Subtitles, ParsingError> {
         let mut f = fs::File::open(path)?;
         if let Some(enc) = encoding {
             let mut buffer = Vec::new();
@@ -544,7 +548,11 @@ impl Subtitles {
     /// variant will be returned.
     ///
     /// [Encoding Standard]: https://encoding.spec.whatwg.org/#names-and-labels
-    pub fn write_to_file(&self, path: &str, encoding: Option<&str>) -> Result<(), ParsingError> {
+    pub fn write_to_file(
+        &self,
+        path: impl AsRef<Path>,
+        encoding: Option<&str>,
+    ) -> Result<(), ParsingError> {
         let mut f = fs::File::create(path)?;
         if let Some(enc) = encoding {
             let string = &self.to_string();
