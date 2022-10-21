@@ -192,7 +192,7 @@ impl Timestamp {
         let mut second_iter = iter
             .next()
             .ok_or(ParsingError::MalformedTimestamp)?
-            .splitn(2, ",");
+            .splitn(2, ',');
         let seconds = second_iter
             .next()
             .ok_or(ParsingError::MalformedTimestamp)?
@@ -232,7 +232,7 @@ impl Timestamp {
     pub fn add_minutes(&mut self, n: i32) {
         let delta = (self.minutes as i32 + n) % 60;
         self.add_hours((self.minutes as i32 + n) / 60 - delta.is_negative() as i32);
-        self.minutes = ((60 + delta) % 60).abs() as u8;
+        self.minutes = ((60 + delta) % 60).unsigned_abs() as u8;
     }
 
     /// Moves the timestamp n seconds forward in time.
@@ -244,7 +244,7 @@ impl Timestamp {
     pub fn add_seconds(&mut self, n: i32) {
         let delta = (self.seconds as i32 + n) % 60;
         self.add_minutes((self.seconds as i32 + n) / 60 - delta.is_negative() as i32);
-        self.seconds = ((60 + delta) % 60).abs() as u8;
+        self.seconds = ((60 + delta) % 60).unsigned_abs() as u8;
     }
 
     /// Moves the timestamp n milliseconds forward in time.
@@ -256,7 +256,7 @@ impl Timestamp {
     pub fn add_milliseconds(&mut self, n: i32) {
         let delta = (self.milliseconds as i32 + n) % 1000;
         self.add_seconds((self.milliseconds as i32 + n) / 1000 - delta.is_negative() as i32);
-        self.milliseconds = ((1000 + delta) % 1000).abs() as u16;
+        self.milliseconds = ((1000 + delta) % 1000).unsigned_abs() as u16;
     }
 
     /// Returns the timestamp as a tuple of four integers (hours, minutes, seconds, milliseconds).
@@ -319,7 +319,7 @@ impl Subtitle {
     }
 
     /// Construct a new subtitle by parsing a string with the format "num\nstart --> end\ntext" or the format
-    /// "num\nstart --> end position_information\ntext" where start and end are timestamps using the format 
+    /// "num\nstart --> end position_information\ntext" where start and end are timestamps using the format
     /// hours:minutes:seconds,milliseconds ; and position_information is position information of any format
     ///
     /// # Errors
@@ -327,7 +327,7 @@ impl Subtitle {
     /// If this function encounters anything unexpected while parsing the string, a corresponding error variant
     /// will be returned.
     pub fn parse(input: String) -> Result<Subtitle, ParsingError> {
-        let mut iter = input.trim_start_matches('\n').splitn(3, "\n");
+        let mut iter = input.trim_start_matches('\n').splitn(3, '\n');
         let num = iter
             .next()
             .ok_or(ParsingError::BadSubtitleStructure(0))?
@@ -339,10 +339,12 @@ impl Subtitle {
                 .next()
                 .ok_or(ParsingError::BadSubtitleStructure(num))?,
         )?;
-        let end_with_possible_position_info = time_iter.next().ok_or(ParsingError::BadSubtitleStructure(num))?;
+        let end_with_possible_position_info = time_iter
+            .next()
+            .ok_or(ParsingError::BadSubtitleStructure(num))?;
         let end = Timestamp::parse(
             end_with_possible_position_info
-                .split(" ")
+                .split(' ')
                 .next()
                 .ok_or(ParsingError::BadSubtitleStructure(num))?,
         )?;
@@ -423,13 +425,13 @@ impl fmt::Display for Subtitle {
 /// ```
 ///
 /// [`Subtitle`]: struct.Subtitle.html
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Default, PartialEq, Eq)]
 pub struct Subtitles(Vec<Subtitle>);
 
 impl Subtitles {
     /// Constructs a new(empty) Subtitles collection.
     pub fn new() -> Subtitles {
-        Subtitles(Vec::new())
+        Default::default()
     }
 
     /// Constructs a new Subtitles collection from a vector of [`Subtitle`] structs.
@@ -453,13 +455,14 @@ impl Subtitles {
         let mut res = Subtitles::new();
 
         input = input.trim_start_matches('\u{feff}').to_string();
-        if input.contains("\r") {
-            input = input.replace("\r", "");
+        if input.contains('\r') {
+            input = input.replace('\r', "");
         }
 
         for s in input
             .split_terminator("\n\n")
-            .filter(|&x| x.contains(char::is_alphanumeric)) // only parse lines that include alphanumeric characters
+            // only parse lines that include alphanumeric characters
+            .filter(|&x| x.contains(char::is_alphanumeric))
         {
             res.push(Subtitle::parse(s.to_string())?);
         }
@@ -510,11 +513,11 @@ impl Subtitles {
             let (cow, ..) = Encoding::for_label(enc.as_bytes())
                 .ok_or(ParsingError::BadEncodingName)?
                 .decode(buffer.as_slice());
-            return Ok(Subtitles::parse_from_str(cow[..].to_string())?);
+            Subtitles::parse_from_str(cow[..].to_string())
         } else {
             let mut buffer = String::new();
             f.read_to_string(&mut buffer)?;
-            return Ok(Subtitles::parse_from_str(buffer)?);
+            Subtitles::parse_from_str(buffer)
         }
     }
 
@@ -579,6 +582,11 @@ impl Subtitles {
         self.0.len()
     }
 
+    /// Checks if there are no subtitles in the collection.
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+
     /// Adds a new subtitle at the end of the subtitles.
     pub fn push(&mut self, sub: Subtitle) {
         self.0.push(sub);
@@ -622,7 +630,7 @@ impl<I: std::slice::SliceIndex<[Subtitle]>> Index<I> for Subtitles {
 
 impl fmt::Display for Subtitles {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if self.len() > 0 {
+        if !self.is_empty() {
             let mut s = String::new();
             for sub in &self[..self.len() - 1] {
                 s.push_str(&format!("{}\n\n", &sub.to_string()));
@@ -792,7 +800,7 @@ mod tests {
             Timestamp::new(0, 0, 9, 15),
             "This is a subtitle text".to_string(),
         );
-        
+
         assert_eq!(Subtitle::parse(input.to_string()).unwrap(), result);
     }
 }
