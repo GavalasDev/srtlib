@@ -1,6 +1,6 @@
 # srtlib
 
-[![Build Status](https://img.shields.io/github/workflow/status/galenkod/srtlib/Rust)](https://github.com/galenkod/srtlib/actions?query=workflow%3ARust)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/gavalasdev/srtlib/rust.yml?branch=master)](https://github.com/galenkod/srtlib/actions?query=workflow%3ARust)
 [![Version](https://img.shields.io/crates/v/srtlib)](https://crates.io/crates/srtlib)
 [![Documentation](https://docs.rs/srtlib/badge.svg)](https://docs.rs/srtlib)
 ![License](https://img.shields.io/crates/l/srtlib)
