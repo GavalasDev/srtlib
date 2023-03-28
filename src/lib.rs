@@ -232,7 +232,7 @@ impl Timestamp {
     pub fn add_minutes(&mut self, n: i32) {
         let delta = (self.minutes as i32 + n) % 60;
         self.add_hours((self.minutes as i32 + n) / 60 - delta.is_negative() as i32);
-        self.minutes = ((60 + delta) % 60).unsigned_abs() as u8;
+        self.minutes = ((60 + delta) % 60).abs() as u8;
     }
 
     /// Moves the timestamp n seconds forward in time.
@@ -244,7 +244,7 @@ impl Timestamp {
     pub fn add_seconds(&mut self, n: i32) {
         let delta = (self.seconds as i32 + n) % 60;
         self.add_minutes((self.seconds as i32 + n) / 60 - delta.is_negative() as i32);
-        self.seconds = ((60 + delta) % 60).unsigned_abs() as u8;
+        self.seconds = ((60 + delta) % 60).abs() as u8;
     }
 
     /// Moves the timestamp n milliseconds forward in time.
@@ -256,7 +256,7 @@ impl Timestamp {
     pub fn add_milliseconds(&mut self, n: i32) {
         let delta = (self.milliseconds as i32 + n) % 1000;
         self.add_seconds((self.milliseconds as i32 + n) / 1000 - delta.is_negative() as i32);
-        self.milliseconds = ((1000 + delta) % 1000).unsigned_abs() as u16;
+        self.milliseconds = ((1000 + delta) % 1000).abs() as u16;
     }
 
     /// Returns the timestamp as a tuple of four integers (hours, minutes, seconds, milliseconds).
