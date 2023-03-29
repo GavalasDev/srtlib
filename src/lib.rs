@@ -259,6 +259,30 @@ impl Timestamp {
         self.milliseconds = ((1000 + delta) % 1000).unsigned_abs() as u16;
     }
 
+    /// Moves the timestamp forward in time by an amount specified as timestamp.
+    /// 
+    /// # Panics
+    /// 
+    /// Panics if we exceed the upper limit
+    pub fn add(&mut self, timestamp: &Timestamp) {
+        self.add_hours(timestamp.hours as i32);
+        self.add_minutes(timestamp.minutes as i32);
+        self.add_seconds(timestamp.seconds as i32);
+        self.add_milliseconds(timestamp.milliseconds as i32);
+    }
+
+    /// Moves the timestamp backward in time by an amount specified as timestamp.
+    /// 
+    /// # Panics
+    /// 
+    /// Panics if we go below zero
+    pub fn sub(&mut self, timestamp: &Timestamp) {
+        self.add_milliseconds(-(timestamp.milliseconds as i32));
+        self.add_seconds(-(timestamp.seconds as i32));
+        self.add_minutes(-(timestamp.minutes as i32));
+        self.add_hours(-(timestamp.hours as i32));
+    }
+
     /// Returns the timestamp as a tuple of four integers (hours, minutes, seconds, milliseconds).
     pub fn get(&self) -> (u8, u8, u8, u16) {
         (self.hours, self.minutes, self.seconds, self.milliseconds)
@@ -394,6 +418,26 @@ impl Subtitle {
     pub fn add_milliseconds(&mut self, n: i32) {
         self.start_time.add_milliseconds(n);
         self.end_time.add_milliseconds(n);
+    }
+
+    /// Moves the start and end timestamps forward in time by an amount specified as timestamp.
+    /// 
+    /// # Panics
+    ///     
+    /// Panics if we exceed the upper limit
+    pub fn add(&mut self, timestamp: &Timestamp) {
+        self.start_time.add(timestamp);
+        self.end_time.add(timestamp);
+    }
+
+    /// Moves the start and end timestamps backward in time by an amount specified as timestamp.
+    /// 
+    /// # Panics
+    /// 
+    /// Panics if we go below zero
+    pub fn sub(&mut self, timestamp: &Timestamp) {
+        self.start_time.sub(timestamp);
+        self.end_time.sub(timestamp);
     }
 }
 
