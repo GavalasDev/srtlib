@@ -260,9 +260,9 @@ impl Timestamp {
     }
 
     /// Moves the timestamp forward in time by an amount specified as timestamp.
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// Panics if we exceed the upper limit
     pub fn add(&mut self, timestamp: &Timestamp) {
         self.add_hours(timestamp.hours as i32);
@@ -272,9 +272,9 @@ impl Timestamp {
     }
 
     /// Moves the timestamp backward in time by an amount specified as timestamp.
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// Panics if we go below zero
     pub fn sub(&mut self, timestamp: &Timestamp) {
         self.add_milliseconds(-(timestamp.milliseconds as i32));
@@ -421,7 +421,7 @@ impl Subtitle {
     }
 
     /// Moves the start and end timestamps forward in time by an amount specified as timestamp.
-    /// 
+    ///
     /// # Panics
     ///     
     /// Panics if we exceed the upper limit
@@ -431,9 +431,9 @@ impl Subtitle {
     }
 
     /// Moves the start and end timestamps backward in time by an amount specified as timestamp.
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// Panics if we go below zero
     pub fn sub(&mut self, timestamp: &Timestamp) {
         self.start_time.sub(timestamp);
@@ -781,6 +781,18 @@ mod tests {
         assert_eq!(
             sub.to_string(),
             "1\n00:02:00,000 --> 00:02:02,000\nHello world!"
+        );
+        let t1 = Timestamp::new(0, 0, 0, 0);
+        let t2 = Timestamp::new(1, 20, 0, 0);
+        sub.add(&t1);
+        assert_eq!(
+            sub.to_string(),
+            "1\n00:02:00,000 --> 00:02:02,000\nHello world!"
+        );
+        sub.add(&t2);
+        assert_eq!(
+            sub.to_string(),
+            "1\n01:22:00,000 --> 01:22:02,000\nHello world!"
         );
     }
 
