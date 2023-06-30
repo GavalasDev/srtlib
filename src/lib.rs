@@ -635,6 +635,11 @@ impl Subtitles {
     pub fn push(&mut self, sub: Subtitle) {
         self.0.push(sub);
     }
+
+    /// Sorts the subtitles in place based on their numeric counter
+    pub fn sort(&mut self) {
+        self.0.sort();
+    }
 }
 
 impl IntoIterator for Subtitles {
@@ -833,6 +838,23 @@ mod tests {
                 "This is a subtitle!".to_string()
             )
         );
+    }
+
+    #[test]
+    fn sort_subtitles() {
+        let subs = "2\n00:00:01,500 --> 00:00:02,500\nThis is a subtitle!\n\n\
+                    1\n00:00:00,000 --> 00:00:01,000\nHello world!\nExtra!\n\n\
+                    3\n00:00:02,500 --> 00:00:03,000\nFinal subtitle.\n";
+
+        let mut parsed_subs = Subtitles::parse_from_str(subs.to_string()).unwrap();
+        parsed_subs.sort();
+
+        let true_sort = "1\n00:00:00,000 --> 00:00:01,000\nHello world!\nExtra!\n\n\
+                         2\n00:00:01,500 --> 00:00:02,500\nThis is a subtitle!\n\n\
+                         3\n00:00:02,500 --> 00:00:03,000\nFinal subtitle.\n";
+        let sorted_subs = Subtitles::parse_from_str(true_sort.to_string()).unwrap();
+
+        assert_eq!(parsed_subs, sorted_subs);
     }
 
     #[test]
