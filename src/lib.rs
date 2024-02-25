@@ -192,7 +192,7 @@ impl Timestamp {
         let mut second_iter = iter
             .next()
             .ok_or(ParsingError::MalformedTimestamp)?
-            .splitn(2, ',');
+            .splitn(2, &[',', '.']);
         let seconds = second_iter
             .next()
             .ok_or(ParsingError::MalformedTimestamp)?
@@ -736,6 +736,14 @@ mod tests {
         );
         assert_eq!(
             Timestamp::parse("32:00:46,000").unwrap(),
+            Timestamp::new(32, 0, 46, 000)
+        );
+        assert_eq!(
+            Timestamp::parse("12:35:42.756").unwrap(),
+            Timestamp::new(12, 35, 42, 756)
+        );
+        assert_eq!(
+            Timestamp::parse("32:00:46.000").unwrap(),
             Timestamp::new(32, 0, 46, 000)
         );
     }
