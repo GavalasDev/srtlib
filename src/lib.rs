@@ -372,7 +372,7 @@ impl Subtitle {
                 .next()
                 .ok_or(ParsingError::BadSubtitleStructure(num))?,
         )?;
-        let text = iter.next().ok_or(ParsingError::BadSubtitleStructure(num))?;
+        let text = iter.next().unwrap_or_default();
         Ok(Subtitle::new(num, start, end, text.to_string()))
     }
 
@@ -888,5 +888,31 @@ mod tests {
         );
 
         assert_eq!(Subtitle::parse(input.to_string()).unwrap(), result);
+    }
+
+    #[test]
+    fn empty_text_for_timestamp() {
+        let subs = "1\n00:00:00,000 --> 00:00:01,000\n\n\n\
+                    2\n00:00:01,500 --> 00:00:02,500\nThis is a subtitle!";
+
+        let parsed_subs = Subtitles::parse_from_str(subs.to_string()).unwrap();
+        assert_eq!(
+            parsed_subs[0],
+            Subtitle::new(
+                1,
+                Timestamp::new(0, 0, 0, 0),
+                Timestamp::new(0, 0, 1, 0),
+                String::new(),
+            )
+        );
+        assert_eq!(
+            parsed_subs[1],
+            Subtitle::new(
+                2,
+                Timestamp::new(0, 0, 1, 500),
+                Timestamp::new(0, 0, 2, 500),
+                "This is a subtitle!".to_string()
+            )
+        );
     }
 }
