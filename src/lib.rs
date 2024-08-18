@@ -167,11 +167,11 @@ pub struct Timestamp {
 
 impl Timestamp {
     /// The maximum value for any given Timestamp.
-    /// TODO: Do we need this?
-    pub const MAX_TIMESTAMP_MILLIS: u32 = 255 * ONE_HOUR_MILLIS + 59 * ONE_MINUTE_MILLIS + 59 * ONE_SECOND_MILLIS + 999;
+    pub const MAX_TIMESTAMP_MILLIS: u32 =
+        255 * ONE_HOUR_MILLIS + 59 * ONE_MINUTE_MILLIS + 59 * ONE_SECOND_MILLIS + 999;
     /// Converts hours, minutes, seconds and milliseconds to milliseconds.
     pub fn convert_to_milliseconds(hours: u8, minutes: u8, seconds: u8, milliseconds: u16) -> u32 {
-        (((hours as u32 *60) + minutes as u32) * 60 + seconds as u32 )  * 1000 + milliseconds as u32
+        (((hours as u32 * 60) + minutes as u32) * 60 + seconds as u32) * 1000 + milliseconds as u32
     }
     /// Constructs a new Timestamp from integers.
     pub fn new(hours: u8, minutes: u8, seconds: u8, milliseconds: u16) -> Timestamp {
@@ -215,7 +215,7 @@ impl Timestamp {
             .ok_or(ParsingError::MalformedTimestamp)?
             .parse()?;
 
-        Ok( Timestamp::new(hours, minutes, seconds, milliseconds) )
+        Ok(Timestamp::new(hours, minutes, seconds, milliseconds))
     }
 
     /// Moves the timestamp n hours forward in time.
@@ -224,8 +224,8 @@ impl Timestamp {
     /// # Panics
     ///
     /// Panics if we exceed the upper limit or go below zero.
-    pub fn add_hours(&mut self, n: i32) {
-        self.add_milliseconds(n * ONE_HOUR_MILLIS as i32);
+    pub fn add_hours(&mut self, n: i64) {
+        self.add_milliseconds(n * ONE_HOUR_MILLIS as i64);
     }
 
     /// Moves the timestamp n minutes forward in time.
@@ -234,8 +234,8 @@ impl Timestamp {
     /// # Panics
     ///
     /// Panics if we exceed the upper limit or go below zero.
-    pub fn add_minutes(&mut self, n: i32) {
-        self.add_milliseconds(n * ONE_MINUTE_MILLIS as i32);
+    pub fn add_minutes(&mut self, n: i64) {
+        self.add_milliseconds(n * ONE_MINUTE_MILLIS as i64);
     }
 
     /// Moves the timestamp n seconds forward in time.
@@ -244,8 +244,8 @@ impl Timestamp {
     /// # Panics
     ///
     /// Panics if we exceed the upper limit or go below zero.
-    pub fn add_seconds(&mut self, n: i32) {
-        self.add_milliseconds(n * ONE_SECOND_MILLIS as i32);
+    pub fn add_seconds(&mut self, n: i64) {
+        self.add_milliseconds(n * ONE_SECOND_MILLIS as i64);
     }
 
     /// Moves the timestamp n milliseconds forward in time.
@@ -254,21 +254,12 @@ impl Timestamp {
     /// # Panics
     ///
     /// Panics if we exceed the upper limit or go below zero.
-    pub fn add_milliseconds(&mut self, n: i32) {
-        let millis : u32;
-        if n.is_negative() {
-            if self.milliseconds < n.wrapping_abs() as u32 {
+    pub fn add_milliseconds(&mut self, n: i64) {
+        let millis: i64 = self.milliseconds as i64 + n;
+        if millis < 0 || millis > Self::MAX_TIMESTAMP_MILLIS as i64 {
             panic!("Surpassed limits of Timestamp!");
-            } else {
-                millis = self.milliseconds - n.wrapping_abs() as u32;
-            }
-        } else {
-            millis = self.milliseconds + n as u32;
-            if millis > Self::MAX_TIMESTAMP_MILLIS {
-                panic!("Surpassed limits of Timestamp!");
-            }
         }
-        self.milliseconds = millis;
+        self.milliseconds = millis as u32;
     }
 
     /// Moves the timestamp forward in time by an amount specified as timestamp.
@@ -277,7 +268,7 @@ impl Timestamp {
     ///
     /// Panics if we exceed the upper limit
     pub fn add(&mut self, timestamp: &Timestamp) {
-        self.milliseconds += timestamp.milliseconds;
+        self.add_milliseconds(timestamp.milliseconds as i64);
     }
 
     /// Moves the timestamp backward in time by an amount specified as timestamp.
@@ -286,32 +277,25 @@ impl Timestamp {
     ///
     /// Panics if we go below zero
     pub fn sub(&mut self, timestamp: &Timestamp) {
-        let mut millis : i64 = self.milliseconds as i64;
-        millis -= timestamp.milliseconds as i64;
-        if millis < 0 {
-            panic!("Surpassed limits of Timestamp!");
-        }
-
-        self.milliseconds = millis as u32;
-        
+        self.add_milliseconds(-(timestamp.milliseconds as i64));
     }
 
     /// Returns the timestamp as a tuple of four integers (hours, minutes, seconds, milliseconds).
     pub fn get(&self) -> (u8, u8, u8, u16) {
-        
         let mut millis = self.milliseconds;
         let hours = (self.milliseconds / ONE_HOUR_MILLIS) as u8;
         millis -= (hours as u32) * ONE_HOUR_MILLIS;
-        let minuts = ( millis / ONE_MINUTE_MILLIS) as u8;
+        let minuts = (millis / ONE_MINUTE_MILLIS) as u8;
         millis -= (minuts as u32) * ONE_MINUTE_MILLIS;
-        let seconds = ( millis / ONE_SECOND_MILLIS) as u8;
+        let seconds = (millis / ONE_SECOND_MILLIS) as u8;
         millis -= (seconds as u32) * ONE_SECOND_MILLIS;
         (hours, minuts, seconds, millis as u16)
     }
 
     /// Changes the timestamp according to the given integer values.
     pub fn set(&mut self, hours: u8, minutes: u8, seconds: u8, milliseconds: u16) {
-        self.milliseconds = Timestamp::convert_to_milliseconds(hours, minutes, seconds, milliseconds);
+        self.milliseconds =
+            Timestamp::convert_to_milliseconds(hours, minutes, seconds, milliseconds);
     }
 }
 
@@ -401,7 +385,7 @@ impl Subtitle {
     /// # Panics
     ///
     /// Panics if we exceed the upper limit or go below zero.
-    pub fn add_hours(&mut self, n: i32) {
+    pub fn add_hours(&mut self, n: i64) {
         self.start_time.add_hours(n);
         self.end_time.add_hours(n);
     }
@@ -412,7 +396,7 @@ impl Subtitle {
     /// # Panics
     ///
     /// Panics if we exceed the upper limit or go below zero.
-    pub fn add_minutes(&mut self, n: i32) {
+    pub fn add_minutes(&mut self, n: i64) {
         self.start_time.add_minutes(n);
         self.end_time.add_minutes(n);
     }
@@ -423,7 +407,7 @@ impl Subtitle {
     /// # Panics
     ///
     /// Panics if we exceed the upper limit or go below zero.
-    pub fn add_seconds(&mut self, n: i32) {
+    pub fn add_seconds(&mut self, n: i64) {
         self.start_time.add_seconds(n);
         self.end_time.add_seconds(n);
     }
@@ -434,7 +418,7 @@ impl Subtitle {
     /// # Panics
     ///
     /// Panics if we exceed the upper limit or go below zero.
-    pub fn add_milliseconds(&mut self, n: i32) {
+    pub fn add_milliseconds(&mut self, n: i64) {
         self.start_time.add_milliseconds(n);
         self.end_time.add_milliseconds(n);
     }
@@ -731,18 +715,11 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "attempt to add with overflow")]
-    fn u32_overflow_panic() {
-        let mut timestamp = Timestamp::new(0, 0, 0, 1);
-        let max_ts = Timestamp::from_milliseconds(u32::MAX);
-        timestamp.add(&max_ts);
-    }
-
-    #[test]
     #[should_panic(expected = "Surpassed limits of Timestamp!")]
     fn timestamp_overflow_panic() {
-        let mut timestamp = Timestamp::new(0, 0, 0, 1);
-        timestamp.add_milliseconds(Timestamp::MAX_TIMESTAMP_MILLIS as i32);
+        let mut timestamp = Timestamp::new(0, 0, 0, 0);
+        timestamp.add_hours(255);
+        timestamp.add_minutes(60);
         println!("Expected a panic, got: {}", timestamp);
     }
     #[test]
@@ -831,6 +808,34 @@ mod tests {
         assert_eq!(
             sub.to_string(),
             "1\n01:22:00,000 --> 01:22:02,000\nHello world!"
+        );
+    }
+
+    #[test]
+    fn sub_time_subtitle() {
+        let mut sub =
+            Subtitle::parse("1\n01:22:10,000 --> 01:22:12,000\nHello world!".to_string()).unwrap();
+        sub.add_seconds(-120);
+        assert_eq!(
+            sub.to_string(),
+            "1\n01:20:10,000 --> 01:20:12,000\nHello world!"
+        );
+        sub.add_seconds(-10);
+        assert_eq!(
+            sub.to_string(),
+            "1\n01:20:00,000 --> 01:20:02,000\nHello world!"
+        );
+        let t1 = Timestamp::new(0, 0, 0, 0);
+        let t2 = Timestamp::new(1, 20, 0, 0);
+        sub.sub(&t1);
+        assert_eq!(
+            sub.to_string(),
+            "1\n01:20:00,000 --> 01:20:02,000\nHello world!"
+        );
+        sub.sub(&t2);
+        assert_eq!(
+            sub.to_string(),
+            "1\n00:00:00,000 --> 00:00:02,000\nHello world!"
         );
     }
 
